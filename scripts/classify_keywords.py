@@ -22,7 +22,7 @@ def main():
     parser.add_argument(
         "--save_folder",
         type=str,
-        default='data/intermediate_save',
+        default='data/generated',
         help="Where to store the intermediate saved files.",
     )
 
