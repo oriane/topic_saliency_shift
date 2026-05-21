@@ -29,10 +29,13 @@ def knn_clustering(row, references):
 def classify(references, kws_count):
     print(f'Index references.')
     tqdm.pandas()
-    index_reference(references)
     to_label = kws_count.loc[kws_count['topic_name'].isna()]
-    new_labels = to_label.progress_apply(knn_clustering, axis=1, references=references)
-    unlabeled = (new_labels == 'none').sum() / len(to_label)
-    print(f'Proportion of keyword without cluster {unlabeled}')
-    kws_count.loc[to_label.index, 'topic_name'] = new_labels
+    if not to_label.empty:
+        index_reference(references)
+        new_labels = to_label.progress_apply(knn_clustering, axis=1, references=references)
+        unlabeled = (new_labels == 'none').sum() / len(to_label)
+        print(f'Proportion of keyword without cluster {unlabeled}')
+        kws_count.loc[to_label.index, 'topic_name'] = new_labels
+    else:
+        print('All keywords already labeled.')
     return kws_count
