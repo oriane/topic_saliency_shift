@@ -1,0 +1,16 @@
+### macOS ###
+.DS_Store
+### Pycharm ###
+.idea/
+### Juypter ###
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+### Python ###
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+### Other ###
+logs/*
+data/keywords/*
+data/generated_knn_data/*
