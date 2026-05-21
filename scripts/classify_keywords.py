@@ -1,4 +1,5 @@
 import argparse
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -63,6 +64,9 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if not os.path.exists(args.save_folder):
+        os.makedirs(args.save_folder)
 
     if args.kw_reference_embeddings is not None:
         print('Use existing reference embeddings.')
