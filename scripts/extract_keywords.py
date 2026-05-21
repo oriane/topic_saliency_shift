@@ -1,7 +1,6 @@
 import argparse
 import json
 import os
-import tomllib
 
 import pandas as pd
 from pydantic import BaseModel, Field, ConfigDict

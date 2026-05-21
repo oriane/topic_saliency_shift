@@ -2,7 +2,6 @@ import argparse
 import itertools
 import json
 
-import sys
 import os
 
 import torch
