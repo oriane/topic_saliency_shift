@@ -5,15 +5,28 @@ Monoculture"***.
 ```text
 ├── scripts
 │   ├── run_solution_generation     # script for the sampling generation of climate solutions
+│   ├── extract_keywords            # script for extracting keywords from models' outputs
+│   ├── classify_keywords           # script to perform knn classification on extracted keywords
+│   ├── measure_homogenisation      # script to compute and plot keywords semantic spread
+│   ├── measure_topic_saliency      # script to compute and plot the GLMM and KDE plot
 │
 ├── src 
 │   ├── utils
 │       ├── log_config              # setting up the loggers
 │       ├── model_manager           # handles model response across huggingface, ollama and open-routers backend
+│       ├── data_handling           # load and process keywords data
 │   ├── generation                  # calls the model manager
 │   ├── prompts                     # handles the prompt combinations
+│   ├── embed                       # batch embed keywords
+│   ├── knn                         # performs knn classification
+│   ├── semantic_spead              # computes and plot homogenisation metric
+│   ├── glmm                        # computes and plot glmm based topic saliency shift metric
+│   ├── kde                         # KDE plot
 ├── data
-│   ├──
+│   ├── model_info.json             # information about model incl. family, type and size
+│   ├── knn_data             
+│       ├── kws_gt.csv              # manually curated ground truth for knn classification
+│       ├── kws_test_set.csv        # manually curated test set for knn classification
 │
 ```
 #  Set Up
@@ -62,7 +75,7 @@ This will fetch the reference and test set in `data/knn_data`, the keywords in `
 # Analyse Data
 
 ## 4. Analyse Homogenisation
-To compute and plot the semantic spread of the keywords, run 'measure_homogenisation' on top of the `kws_counts_labeled_<timestamp>.pkl`
+To compute and plot the semantic spread of the keywords, run `measure_homogenisation` on top of the `kws_counts_labeled_<timestamp>.pkl`
 file created in step 3, as such:
 ```bash 
 uv run -m scripts.measure_homogenisation --folder_path data/keywords --keywords_path data/generated/kws_counts_labeled_<timestamp>.pkl --save_folder data/generated
@@ -70,3 +83,12 @@ uv run -m scripts.measure_homogenisation --folder_path data/keywords --keywords_
 This will save the corresponding `semantic_spread` plot in the specified `save_folder`.
 
 ## 5. Analyse Topic Saliency Shift
+The topic saliency shift analysis is performed by `measure_topic_saliency` on top of the `kws_counts_labeled_<timestamp>.pkl`.
+Run:
+```bash 
+uv run -m scripts.measure_topic_saliency --folder_path data/keywords --keywords_path data/generated/kws_counts_labeled_<timestamp>.pkl --save_folder data/generated
+```
+This will create three plots in the specified `save_folder`:
+- `glmm_large.png` which plots log-odd ratio and credibility range for all topics.
+- `glmm_small.png` which only plot same result but for the top, bottom and middle three topics as ordered by post-training effect.
+- `density.png` which plots the KDE density across model types for the 9 topics specified above. 
