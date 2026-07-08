@@ -56,6 +56,12 @@ def main():
         default=False,
         help="Whether to use cot or not."
     )
+    parser.add_argument(
+        "--is_manifesto",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Whether to use manifesto prompts."
+    )
     args = parser.parse_args()
 
     logger.info(f"Save path: {args.save_path}")
