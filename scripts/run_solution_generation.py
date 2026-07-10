@@ -57,10 +57,10 @@ def main():
         help="Whether to use cot or not."
     )
     parser.add_argument(
-        "--is_manifesto",
+        "--is_disinformation",
         action=argparse.BooleanOptionalAction,
         default=False,
-        help="Whether to use manifesto prompts."
+        help="Whether to use disinformation prompts."
     )
     args = parser.parse_args()
 
@@ -91,7 +91,7 @@ def main():
             is_instruct = True
         logger.info(f"Running model {model_id}")
         template, combinations = get_combinations(is_cot=args.is_cot, is_instruct=is_instruct, is_olmo=args.is_olmo,
-                                                  is_manifesto=args.is_manifesto)
+                                                  is_disinformation=args.is_disinformation)
         with ModelManager(model_id=model_id, device=device, backend=args.backend) as current_model:
             for adj, noun, entity in combinations:
                 base, qa = get_prompt(args.is_cot, template, adj, noun, entity)
