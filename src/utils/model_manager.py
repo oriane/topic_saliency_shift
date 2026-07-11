@@ -140,7 +140,7 @@ class ModelManager:
             messages.append({"role": "user", "content": q})
 
             response = self.client.chat.completions.create(
-                model='openai/gpt-5.4-nano',
+                model=self.model_id,
                 extra_body={"reasoning": {"enabled": False},
                             "include_thoughts": False},
                 messages=messages,
@@ -176,7 +176,10 @@ class ModelManager:
             reasoning_effort='low',
             **generator_args
         )
-        return completion.choices[0].message.content
+        if completion.choices[0]:
+            return completion.choices[0].message.content
+        else:
+            return None
 
     def generate_logits_hf(self, prompts: list[str], batch_size: int = 4,
                            tokenizer_args=None, generator_args=None):
