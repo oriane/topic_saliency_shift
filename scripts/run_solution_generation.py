@@ -23,7 +23,7 @@ def main():
     parser.add_argument(
         "--backend",
         type=str,
-        choices=['huggingface', 'ollama', 'openrouters'],
+        choices=['huggingface', 'ollama', 'openrouters', 'publicapi'],
         default='huggingface',
         help="Which backend to use to serve the models.",
     )
