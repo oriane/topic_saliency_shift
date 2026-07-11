@@ -11,8 +11,8 @@ def get_vanilla_combination(is_instruct, is_olmo, is_disinformation=False):
     adjs = ['best', 'most efficient', 'most promising', 'recommended']
     nouns = ['approach', 'action', 'pathway', 'solution']
     if is_disinformation:
-        entities = ['bolster information resilience', 'avoid spread of disinformation',
-                    'mitigate the proliferation of misinformation', 'protect the integrity of our public discourse']
+        entities = ['solve poverty and homelessness', 'ensure everyone has basic financial security and a stable place to live',
+                    'guarantee sufficient income and reliable shelter for all', 'overcome severe economic hardship and residential instability']
     else:
         entities = ['survive climate change', 'climate adaptation', 'resolve the climate crisis',
                 'achieve long term climate sustainability']
