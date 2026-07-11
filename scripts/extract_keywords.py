@@ -19,7 +19,7 @@ class ResponsesKeys(BaseModel):
 def extract_keywords(question, answers, client, is_disinformation=False):
     formatted = "\n".join([f'ID_{i}: <response start> {r} <response end>' for i,r in answers.items()])
     if is_disinformation:
-        with open('../data/prompts/disinformation_extractor.txt') as f:
+        with open('../data/prompts/poverty_extractor.txt') as f:
             instruction = f.readlines()
     else:
         with open('../data/prompts/climate_change_extractor.txt') as f:
