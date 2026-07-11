@@ -16,8 +16,14 @@ class ResponsesKeys(BaseModel):
     model_config = ConfigDict(extra="forbid")
     response_keys: list[ResponseKeys] = Field(..., min_length=50, max_length=50) # ensures that keywords are extracted for all completion
 
-def extract_keywords(question, answers, client):
+def extract_keywords(question, answers, client, is_disinformation=False):
     formatted = "\n".join([f'ID_{i}: <response start> {r} <response end>' for i,r in answers.items()])
+    if is_disinformation:
+        with open('../data/prompts/disinformation_extractor.txt') as f:
+            instruction = f.readlines()
+    else:
+        with open('../data/prompts/climate_change_extractor.txt') as f:
+            instruction = f.readlines()
     completion = client.chat.completions.create(
         model="openai/gpt-5-mini",
         extra_body={"reasoning": {"effort": "minimal"}},
@@ -26,27 +32,7 @@ def extract_keywords(question, answers, client):
                 "role": "system",
                 "content": (
                     f"""
-                    Role: You are an expert Linguistic Analyst specializing in Information Retrieval in the context of Climate Adaptation.
-                    Task: Extract highly specific key terms from EACH of the provided Responses, using the Question to determine relevance.
-                    Instructions:
-                    - Length: Each term must be between 1 and 4 words long.
-                    - Relevance: Only extract terms that directly address or explain the core subject of the Question. Do not extract terms that are only found in the question itself. If no relevant terms exist in the Answer, return an empty list.                    
-                    Here is an example of how to extract relevant terms, with the associated rational:
-                    Examples:
-                        Example 1:
-                            Question: In a sentence, describe the best concrete action to survive climate change.
-                            Response: To survive climate change, one of the most effective concrete actions individuals can take is to drastically reduce their carbon footprint by transitioning to a plant-based diet, minimizing air travel, and using renewable energy sources such as solar or wind power for their homes and transportation.
-                            Keywords and Rational:
-                                - 'individuals' -> Provides information on climate adaptation actors. 
-                                - 'carbon footprint' -> Provides information on climate adaptation metrics. 
-                                - 'plant-based diet', 'minimizing air travel', 'renewable energy', 'solar power', 'wind power',  -> Provides information on climate adaptation actions. 
-                        Example 2:
-                            Question: In a sentence, describe the best concrete action to resolve the climate crisis.
-                            Response: To resolve the climate crisis, the best concrete action is to rapidly transition to 100% renewable energy worldwide by investing in solar, wind, and other clean energy technologies, improving energy efficiency, and implementing policies like carbon pricing and green infrastructure development, as outlined in reports by organizations such as the International Renewable Energy Agency (IRENA) and the Intergovernmental Panel on Climate Change (IPCC).
-                            Keywords and Rational:
-                                - 'IRENA', 'IPCC' -> Provides information on climate adaptation actors. 
-                                - 'renewable energy', 'clean energy technologies', 'improving energy efficiency', 'implementing policies', 'carbon pricing', 'green infrastructure development'  -> Provides information on climate adaptation actions.
-
+                   {instruction}
                     Input: 
                     Question: {question}\n\nResponses:\n{formatted}
                     """
