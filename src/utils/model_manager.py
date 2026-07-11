@@ -185,7 +185,7 @@ class ModelManager:
             reasoning_effort='low',
             **generator_args
         )
-        if completion.choices[0]:
+        if completion.choices:
             return completion.choices[0].message.content
         else:
             return None
