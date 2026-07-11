@@ -9,7 +9,8 @@ def vanilla_generation(model, prompt, n=5, max_new_tokens=100):
                                                      'top_k': 0,
                                                      'temperature': 1},
                                      tokenizer_args={'return_tensors': 'pt'})
-        output = output[0] if len(output) == 1 else output
+        if output:
+            output = output[0] if len(output) == 1 else output
         outputs.append(output)
     return outputs
 
