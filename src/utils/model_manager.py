@@ -34,10 +34,19 @@ class ModelManager:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
         elif self.backend == "ollama":
             self.model = OllamaLLM(model=self.model_id, temperature=0.8, num_predict=300)
-        elif (self.backend == "openrouters") | (self.backend == "publicapi"):
+        elif (self.backend == "openrouters"):
             self.client = OpenAI(
                 base_url=os.environ.get('OPENROUTER_ENDPOINT'),
                 api_key=os.environ.get('OPENROUTER_API_KEY'),
+            )
+        elif self.backend == "publicapi":
+            self.client = OpenAI(
+                base_url=os.environ.get('OPENROUTER_ENDPOINT'),
+                api_key=os.environ.get('OPENROUTER_API_KEY'),
+                default_headers={
+                    "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
+                    "User-Agent": "MyPythonClient/1.0"
+                }
             )
         else:
             raise NotImplementedError
@@ -65,10 +74,8 @@ class ModelManager:
             return  self.generate_text_hf(prompts, tokenizer_args, generator_args, generated_only)
         elif self.backend == "ollama":
             return self.generate_text_ollama(prompts, tokenizer_args, generator_args, include_thinking)
-        elif self.backend == "openrouters":
+        elif (self.backend == "openrouters") | (self.backend == "publicapi"):
             return self.generate_text_openrouter(prompts, tokenizer_args, generator_args)
-        elif self.backend == "publicapi":
-            return self.generate_text_publicapi(prompts, tokenizer_args, generator_args)
 
     def generate_text_cot(self, prompts: list[str], batch_size: int = 4,
                         tokenizer_args=None,
@@ -152,40 +159,6 @@ class ModelManager:
             answer = response.choices[0].message.content
             messages.append({"role": "assistant", "content": answer})
         return messages
-
-    def generate_text_publicapi(self, prompt: str, tokenizer_args=None, generator_args=None,
-                                 generated_only=False):
-        if 'max_new_tokens' in generator_args:
-            generator_args['max_tokens'] = generator_args['max_new_tokens']
-            generator_args.pop('max_new_tokens')
-            generator_args.pop('do_sample')
-            generator_args.pop('top_k')
-        current_time = time.time()
-        random.seed(current_time)
-        i = random.randint(1, 10000)
-        completion = self.client.chat.completions.create(
-            model=self.model_id,
-            default_headers={
-                "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
-                "User-Agent": "MyPythonClient/1.0"
-            },
-        messages = [
-            {"role": "system", "content": f"Request ID: {i}"},
-            {"role": "user", "content": prompt}
-        ],
-            # OpenRouter uses 'extra_body' to pass provider-specific settings
-        extra_body = {
-            "thinking_config": {
-                "include_thoughts": False
-            }
-        },
-        reasoning_effort = 'low',
-        ** generator_args
-        )
-        if completion.choices[0]:
-            return completion.choices[0].message.content
-        else:
-            return None
 
     def generate_text_openrouter(self, prompt: str, tokenizer_args=None, generator_args=None,
                          generated_only=False):
