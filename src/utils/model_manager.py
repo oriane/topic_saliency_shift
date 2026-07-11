@@ -34,7 +34,7 @@ class ModelManager:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
         elif self.backend == "ollama":
             self.model = OllamaLLM(model=self.model_id, temperature=0.8, num_predict=300)
-        elif self.backend == "openrouters":
+        elif (self.backend == "openrouters") | (self.backend == "publicapi"):
             self.client = OpenAI(
                 base_url=os.environ.get('OPENROUTER_ENDPOINT'),
                 api_key=os.environ.get('OPENROUTER_API_KEY'),
