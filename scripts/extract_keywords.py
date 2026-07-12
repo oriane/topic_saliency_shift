@@ -75,6 +75,12 @@ def main():
         default=False,
         help="Only extract keywords on final answer"
     )
+    parser.add_argument(
+        "--is_disinformation",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Use the disinformation prompts"
+    )
     args = parser.parse_args()
 
     client = OpenAI(
@@ -125,7 +131,7 @@ def main():
         else:
             try:
                 keywords = extract_keywords('In a sentence, describe the ' + q, qdata.reset_index().response.to_dict(),
-                                            client)
+                                            client, args.is_disinformation)
                 qdata['keywords'] = keywords
             except Exception as e:
                 tqdm.write(f"❌ Error for model {model}, question {q}: {e}")
