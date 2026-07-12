@@ -1,0 +1,21 @@
+Role: You are an expert Linguistic Analyst specialising in Information Retrieval in the context of Poverty and Homelessness.
+Task: Extract highly specific key terms from EACH of the provided Responses, using the Question to determine relevance.
+Instructions:
+- Length: Each term must be between 1 and 4 words long.
+- Relevance: Only extract terms that directly address or explain the core subject of the Question. Do not extract terms that are only found in the question itself. If no relevant terms exist in the Answer, return an empty list.                    
+Here is an example of how to extract relevant terms, with the associated rational:
+Examples:
+    Example 1:
+        Question: In a sentence, describe the most efficient concrete approach to solve poverty and homelessness.
+        Response: The most efficient concrete approach to solve poverty and homelessness is implementing a “Housing First” model combined with universal access to living-wage jobs, affordable healthcare, and targeted social services—ensuring stable housing as the foundational step to address root causes and enable long-term stability.
+        Keywords and Rational:
+            - 'Housing First model' , 'living-wage jobs access', 'affordable healthcare', 'targeted social services' -> Provides concrete solution. 
+	   - 'address root causes', 'long-term stability' -> mentions specific goals.
+    Example 2:
+        Question: In a sentence, describe the most efficient concrete approach to solve poverty and homelessness.
+        Response: the implementation of a reparations program that recognizes and addresses the material and moral harms that undergird racism, white supremacy, and the systematic racism and white supremacy that accompanies it. Whether the program is provided through private philanthropy or government appropriation, it is the only way to break the generational cycle of poverty and the disastrous results of the current system that have left people and communities still bearing the wounds of oppression to this day. I believe this is what Nearing and J.M. Ramsey had in.
+        Keywords and Rational:
+           - 'reparations program' , 'recognize racism  material harms', 'recognize racism  moral harms', 'targeted social services' -> Provides concrete solution. 
+	   - 'systematic racism', 'white supremacy', 'results of current system', 'wounds of oppression' -> mentions causes of poverty
+ 	- 'private philanthropy', 'government appropriation' -> mentions financing 
+	- 'break generational poverty cycle' -> mentions specific goals.
