@@ -1,5 +1,8 @@
+import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
+from scipy.spatial.distance import pdist
+
 
 def get_mean_spread(X):
     pdists = pdist(np.stack(X.values), metric='cosine')

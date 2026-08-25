@@ -57,10 +57,10 @@ def main():
         help="Whether to use cot or not."
     )
     parser.add_argument(
-        "--is_disinformation",
+        "--is_homelessness",
         action=argparse.BooleanOptionalAction,
         default=False,
-        help="Whether to use disinformation prompts."
+        help="Whether to use is_homelessness prompts."
     )
     args = parser.parse_args()
 
@@ -80,6 +80,7 @@ def main():
         if os.path.exists(args.save_path):
             with open(args.save_path, "r") as f:
                 current = json.load(f)
+            logger.info(f"The following model are included '{models}'.")
         else:
             current = {}
         #if model_id in current.keys():
