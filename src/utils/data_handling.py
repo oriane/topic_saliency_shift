@@ -54,7 +54,11 @@ def get_topic_winrate(full_df):
                topic_presence_df['model_family'], topic_presence_df['qid']],
         columns=topic_presence_df['topic']
     ).reset_index()
-    sparse_df = sparse_df.rename(columns={'State-led': 'state-led', 'taxation': 'carbon-pricing'})
+    sparse_df = sparse_df.rename(columns={'State-led': 'state-led', 'taxation': 'carbon-pricing',
+                                          'pension': 'pension reform', 'landlords': 'landlordship reform'
+        , 'guaranteed incomes': 'universal basic income',
+                                          'end means-testing': 'abolish means-testing',
+                                          'job-training': 'reskilling'})
     topic_columns = sparse_df.columns.drop(['model_name', 'uid', 'model_type', 'model_family', 'qid'])
     sparse_df[topic_columns] = sparse_df[topic_columns].clip(upper=1)  # clip to one to test for presence/absence
     topic_winrate = sparse_df.groupby(['model_name', 'model_type', 'model_family', 'qid']).sum().reset_index()

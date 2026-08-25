@@ -5,15 +5,15 @@ from tqdm import tqdm
 import bambi as bmb
 import arviz as az
 
-def compute_glmm(topic_winrate, topic_columns):
+def compute_glmm(topic_winrate, topic_columns, model_types=['ft', 'pt', 'large'], reference='pt'):
     # only consider models with a pre-trained (pt), fine-tuned (ft) and fine-tuned large (large) version
     ntype = topic_winrate.groupby('model_family').model_type.nunique()
-    complete_family = ntype[ntype >= 3].index
+    complete_family = ntype[ntype >= len(model_types)].index
 
     complete_family_df = topic_winrate.loc[(topic_winrate.model_family.isin(complete_family)) &
-                                       (topic_winrate['model_type'].isin(['ft', 'pt', 'large']))].copy()
+                                       (topic_winrate['model_type'].isin(model_types))].copy()
     # Convert to categorical with the baseline as the first element
-    baseline_model = 'pt'  # comparing both version to baseline, ignoring that some model are from the same family
+    baseline_model = reference  # comparing both version to baseline, ignoring that some model are from the same family
 
     complete_family_df['model_type'] = pd.Categorical(
         complete_family_df['model_type'],
@@ -45,7 +45,7 @@ def compute_glmm(topic_winrate, topic_columns):
     df['hdi97_ub'] = df['hdi97_ub'].astype('float')
     return df
 
-def plot_topic_shift_full(df_sorted, save_folder):
+def plot_topic_shift_full(df_sorted, save_folder, large_only=False):
     fig, ax = plt.subplots(figsize=(12, 15))
     # 2. Shading and Labels
     # Subtle background zones
@@ -59,7 +59,12 @@ def plot_topic_shift_full(df_sorted, save_folder):
     ax.text(0.85, 1.01, 'more likely than base →', transform=ax.transAxes,
             color='#40a368', fontsize=11, ha='right')
 
-    for t, c, l in [('ft', '#9a0eea', 'post-trained'), ('large', '#029386', 'post-trained large')]:
+    if large_only:
+        type_styles = [('large', '#029386', 'post-trained large')]
+    else:
+        type_styles = [('ft', '#9a0eea', 'post-trained'), ('large', '#029386', 'post-trained large')]
+
+    for t, c, l in type_styles:
         df_tmp = df_sorted.loc[df_sorted["model_type"].str.contains(t)]
         coef_error = [df_tmp["mean"] - df_tmp["hdi97_lb"],
                       df_tmp["hdi97_ub"] - df_tmp["mean"]]
@@ -80,7 +85,10 @@ def plot_topic_shift_full(df_sorted, save_folder):
     # This colors the text based on statistical significance (HDI excludes 0)
     plt.draw()  # Required to populate tick labels
     yticks = ax.get_yticklabels()
-    df_tmp = df_sorted.loc[df_sorted["model_type"].str.contains('ft')]
+    if large_only:
+        df_tmp = df_sorted
+    else:
+        df_tmp = df_sorted.loc[df_sorted["model_type"].str.contains('ft')]
     for i, (lower, upper) in enumerate(zip(df_tmp["hdi97_lb"], df_tmp["hdi97_ub"])):
         if upper < 0:
             yticks[i].set_color('#be0119')  # Decreased (Red)
@@ -97,11 +105,14 @@ def plot_topic_shift_full(df_sorted, save_folder):
                 transparent=True)
     print(f'Full glmm plot saved at {save_folder}/glmm_large.png')
 
-def plot_topic_shift_small(df_sorted, save_folder):
+def plot_topic_shift_small(df_sorted, save_folder, large_only=False):
     # Sort by the fine-tuning order and keep the top, bottom and middle 3 topics
-    ft_df = df_sorted.loc[df_sorted.model_type == 'model_type[ft]']
-    mid = int(len(ft_df['topic'].unique()) / 2)
-    selected_topic = ft_df.sort_values('mean').iloc[[-1, -2, -3, mid + 1, mid, mid - 1, 2, 1, 0]].topic.values
+    if large_only:
+        targ_df = df_sorted.loc[df_sorted.model_type == 'model_type[large]']
+    else:
+        targ_df = df_sorted.loc[df_sorted.model_type == 'model_type[ft]']
+    mid = int(len(targ_df['topic'].unique()) / 2)
+    selected_topic = targ_df.sort_values('mean').iloc[[-1, -2, -3, mid + 1, mid, mid - 1, 2, 1, 0]].topic.values
 
     df_small = df_sorted.loc[df_sorted.topic.isin(selected_topic)]
 
@@ -119,8 +130,12 @@ def plot_topic_shift_small(df_sorted, save_folder):
     ax.text(0.85, 1.01, 'more likely than base →', transform=ax.transAxes,
             color='#40a368', fontsize=11, ha='right')
 
+    if large_only:
+        type_styles = [('large', '#9a0eea', 'post-trained large')]
+    else:
+        type_styles = [('ft', '#9a0eea', 'post-trained'), ('large', '#029386', 'post-trained large')]
 
-    for t, c, l in [('ft', '#9a0eea', 'post-trained'), ('large', '#029386', 'post-trained large')]:
+    for t, c, l in type_styles:
         df_tmp = df_small.loc[df_small["model_type"].str.contains(t)]
         coef_error = [df_tmp["mean"] - df_tmp["hdi97_lb"],
                       df_tmp["hdi97_ub"] - df_tmp["mean"]]
@@ -142,13 +157,22 @@ def plot_topic_shift_small(df_sorted, save_folder):
     # This colors the text based on statistical significance (HDI excludes 0)
     plt.draw()  # Required to populate tick labels
     yticks = ax.get_yticklabels()
-    df_tmp = df_small.loc[df_small["model_type"].str.contains('ft')]
 
-    for i, (lower, upper) in enumerate(zip(df_tmp["hdi97_lb"], df_tmp["hdi97_ub"])):
-        if upper < 0:
-            yticks[i].set_color('#be0119')  # Decreased (Red)
-        elif lower > 0:
-            yticks[i].set_color('#40a368')  # Increased (Green)
+    if large_only:
+        for i, (lower, upper) in enumerate(zip(df_small["hdi97_lb"], df_small["hdi97_ub"])):
+            if upper < 0:
+                yticks[i].set_color('#be0119')  # Decreased (Red)
+            elif lower > 0:
+                yticks[i].set_color('#40a368')  # Increased (Green)
+    else:
+        df_tmp = df_sorted.loc[df_sorted["model_type"].str.contains('ft')]
+        for i, (lower, upper) in enumerate(zip(df_tmp["hdi97_lb"], df_tmp["hdi97_ub"])):
+            if upper < 0:
+                yticks[i].set_color('#be0119')  # Decreased (Red)
+            elif lower > 0:
+                yticks[i].set_color('#40a368')  # Increased (Green)
+
+
 
     # Final Polish
     ax.set_xlabel("Log-Odds Ratio", fontsize=12)
