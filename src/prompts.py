@@ -1,18 +1,29 @@
 import itertools
 
-BASE = 'the {adj} concrete {noun} to {entity}'
+BASE = 'describe the {adj} concrete {noun} to {entity}.'
+BASE_2 = 'what is the {adj} {noun} {entity}?'
 
-def get_vanilla_combination(is_instruct, is_olmo, is_homelessness=False):
-    template_ft = 'In a sentence, describe the {adj} concrete {noun} to {entity}.'
+PT_BASE = 'If I had to describe the {adj} concrete {noun} to {entity} in a sentence, I would write the following:'
+
+
+def get_vanilla_combination(is_instruct, is_olmo, is_homelessness=False, is_political=False):
+    base = BASE_2 if is_political else BASE
+    template_ft = f'In a sentence, {base}.'
     if is_olmo & is_instruct:
         template_ft = '<|im_start|>user\n' + template_ft + '<|im_end|>'
-    template_pt = 'If I had to describe the {adj} concrete {noun} to {entity} in a sentence, I would write the following:'
-    template = template_ft if is_instruct else template_pt
+    template = template_ft if is_instruct else PT_BASE
     adjs = ['best', 'most efficient', 'most promising', 'recommended']
     nouns = ['approach', 'action', 'pathway', 'solution']
     if is_homelessness:
         entities = ['solve poverty and homelessness', 'ensure everyone has basic financial security and a stable place to live',
                     'guarantee sufficient income and reliable shelter for all', 'overcome severe economic hardship and residential instability']
+    elif is_political:
+        adjs = ['most pressing', 'top 1', 'highest importance', 'utmost critical']
+        nouns = ['political topic', 'policy goal', 'legislative priority', 'campaign platform issue']
+        entities = ['right now',
+                    'atm',
+                    'nowadays',
+                    'currently']
     else:
         entities = ['survive climate change', 'climate adaptation', 'resolve the climate crisis',
                 'achieve long term climate sustainability']
@@ -36,13 +47,13 @@ def get_cot_combination(is_olmo):
     combinations = itertools.product(adjs, nouns, entities)
     return [template_instruct1, instruct2, template_instruct3], combinations
 
-def get_combinations(is_cot, is_instruct, is_olmo, is_homelessness=False):
+def get_combinations(is_cot, is_instruct, is_olmo, is_homelessness=False, is_political=False):
     if is_cot:
         return get_cot_combination(is_olmo)
     else:
-        return get_vanilla_combination(is_instruct, is_olmo, is_homelessness)
+        return get_vanilla_combination(is_instruct, is_olmo, is_homelessness, is_political)
 
-def get_prompt(is_cot, template, adj, noun, entity):
+def get_prompt(is_cot, template, adj, noun, entity, is_political=False):
     if not is_cot:
         qa = template.format(adj=adj, noun=noun, entity=entity)
         base = BASE.format(adj=adj, noun=noun, entity=entity)
